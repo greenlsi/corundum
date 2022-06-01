@@ -64,9 +64,9 @@ module fpga_core #
     parameter PTP_OFFSET_NS_WIDTH = 32,
     parameter PTP_FNS_WIDTH = 32,
     parameter PTP_PERIOD_NS = 4'd4,
+    parameter PTP_PERIOD_FNS = 32'd0,
     parameter PTP_CLOCK_PIPELINE = 0,
     parameter PTP_PORT_CDC_PIPELINE = 0,
-    parameter PTP_PERIOD_FNS = 32'd0,
     parameter PTP_USE_SAMPLE_CLOCK = 0,
     parameter PTP_SEPARATE_RX_CLOCK = 0,
     parameter PTP_PEROUT_ENABLE = 1,
@@ -78,7 +78,7 @@ module fpga_core #
     parameter RX_QUEUE_OP_TABLE_SIZE = 32,
     parameter TX_CPL_QUEUE_OP_TABLE_SIZE = TX_QUEUE_OP_TABLE_SIZE,
     parameter RX_CPL_QUEUE_OP_TABLE_SIZE = RX_QUEUE_OP_TABLE_SIZE,
-    parameter EVENT_QUEUE_INDEX_WIDTH = 5;
+    parameter EVENT_QUEUE_INDEX_WIDTH = 5,
     parameter TX_QUEUE_INDEX_WIDTH = 13,
     parameter RX_QUEUE_INDEX_WIDTH = 8,
     parameter TX_CPL_QUEUE_INDEX_WIDTH = TX_QUEUE_INDEX_WIDTH,
@@ -960,7 +960,7 @@ mqnic_core_pcie_us #(
     .PTP_PEROUT_ENABLE(PTP_PEROUT_ENABLE),
     .PTP_PEROUT_COUNT(PTP_PEROUT_COUNT),
 
-     // Queue manager configuration (interface)
+    // Queue manager configuration (interface)
     .EVENT_QUEUE_OP_TABLE_SIZE(EVENT_QUEUE_OP_TABLE_SIZE),
     .TX_QUEUE_OP_TABLE_SIZE(TX_QUEUE_OP_TABLE_SIZE),
     .RX_QUEUE_OP_TABLE_SIZE(RX_QUEUE_OP_TABLE_SIZE),
@@ -976,7 +976,7 @@ mqnic_core_pcie_us #(
     .RX_QUEUE_PIPELINE(RX_QUEUE_PIPELINE),
     .TX_CPL_QUEUE_PIPELINE(TX_CPL_QUEUE_PIPELINE),
     .RX_CPL_QUEUE_PIPELINE(RX_CPL_QUEUE_PIPELINE),
-    
+  
     // TX and RX engine configuration (port)
     .TX_DESC_TABLE_SIZE(TX_DESC_TABLE_SIZE),
     .RX_DESC_TABLE_SIZE(RX_DESC_TABLE_SIZE),
@@ -1250,9 +1250,7 @@ core_inst (
     .s_axis_eth_tx_ptp_ts_tag(axis_eth_tx_ptp_ts_tag),
     .s_axis_eth_tx_ptp_ts_valid(axis_eth_tx_ptp_ts_valid),
     .s_axis_eth_tx_ptp_ts_ready(axis_eth_tx_ptp_ts_ready),
-    
  
-
     .eth_rx_clk(eth_rx_clk),
     .eth_rx_rst(eth_rx_rst),
 
@@ -1267,8 +1265,6 @@ core_inst (
     .s_axis_eth_rx_tready(axis_eth_rx_tready),
     .s_axis_eth_rx_tlast(axis_eth_rx_tlast),
     .s_axis_eth_rx_tuser(axis_eth_rx_tuser),
-    
- 
 
     /*
      * Statistics input
