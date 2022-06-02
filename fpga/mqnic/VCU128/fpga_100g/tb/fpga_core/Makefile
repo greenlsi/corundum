@@ -127,7 +127,7 @@ VERILOG_SOURCES += ../../lib/pcie/rtl/pulse_merge.v
 # module parameters
 
 # Structural configuration
-export PARAM_IF_COUNT ?= 2
+export PARAM_IF_COUNT ?= 4
 export PARAM_PORTS_PER_IF ?= 1
 
 # PTP configuration
