@@ -163,10 +163,10 @@ module fpga #
 )
 (
     /*
-     * Clock: 125MHz LVDS
+     * Clock: 100MHz LVDS
      */
-    input  wire         clk_125mhz_p,
-    input  wire         clk_125mhz_n,
+    input  wire         clk_100mhz_p,
+    input  wire         clk_100mhz_n,
 
     /*
      * GPIO
@@ -336,7 +336,7 @@ parameter AXIS_ETH_RX_USER_WIDTH = (PTP_TS_ENABLE ? PTP_TS_WIDTH : 0) + 1;
 wire pcie_user_clk;
 wire pcie_user_reset;
 
-wire clk_125mhz_ibufg;
+wire clk_100mhz_ibufg;
 wire clk_125mhz_mmcm_out;
 
 // Internal 125 MHz clock
@@ -355,17 +355,17 @@ IBUFGDS #(
    .DIFF_TERM("FALSE"),
    .IBUF_LOW_PWR("FALSE")   
 )
-clk_125mhz_ibufg_inst (
-   .O   (clk_125mhz_ibufg),
-   .I   (clk_125mhz_p),
-   .IB  (clk_125mhz_n) 
+clk_100mhz_ibufg_inst (
+   .O   (clk_100mhz_ibufg),
+   .I   (clk_100mhz_p),
+   .IB  (clk_100mhz_n) 
 );
 
 // MMCM instance
-// 125 MHz in, 125 MHz out
+// 100 MHz in, 125 MHz out
 // PFD range: 10 MHz to 500 MHz
 // VCO range: 800 MHz to 1600 MHz
-// M = 8, D = 1 sets Fvco = 1000 MHz (in range)
+// M = 10, D = 1 sets Fvco = 1000 MHz (in range)
 // Divide by 8 to get output frequency of 125 MHz
 MMCME3_BASE #(
     .BANDWIDTH("OPTIMIZED"),
@@ -390,16 +390,16 @@ MMCME3_BASE #(
     .CLKOUT6_DIVIDE(1),
     .CLKOUT6_DUTY_CYCLE(0.5),
     .CLKOUT6_PHASE(0),
-    .CLKFBOUT_MULT_F(8),
+    .CLKFBOUT_MULT_F(10),
     .CLKFBOUT_PHASE(0),
     .DIVCLK_DIVIDE(1),
     .REF_JITTER1(0.010),
-    .CLKIN1_PERIOD(8.0),
+    .CLKIN1_PERIOD(10.0),
     .STARTUP_WAIT("FALSE"),
     .CLKOUT4_CASCADE("FALSE")
 )
 clk_mmcm_inst (
-    .CLKIN1(clk_125mhz_ibufg),
+    .CLKIN1(clk_100mhz_ibufg),
     .CLKFBIN(mmcm_clkfb),
     .RST(mmcm_rst),
     .PWRDWN(1'b0),
@@ -435,7 +435,6 @@ sync_reset_125mhz_inst (
 );
 
 // GPIO
-wire [3:0] sw_int;
 wire qsfp1_modprsl_int;
 wire qsfp2_modprsl_int;
 wire qsfp3_modprsl_int;
@@ -462,18 +461,6 @@ always @(posedge pcie_user_clk) begin
     i2c_sda_o_reg <= i2c_sda_o;
     i2c_sda_t_reg <= i2c_sda_t;
 end
-
-debounce_switch #(
-    .WIDTH(9),
-    .N(4),
-    .RATE(250000)
-)
-debounce_switch_inst (
-    .clk(pcie_user_clk),
-    .rst(pcie_user_reset),
-    .in({sw_int}),
-    .out({sw_int})  
-);
 
 sync_signal #(
     .WIDTH(10),

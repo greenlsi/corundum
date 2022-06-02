@@ -25,10 +25,10 @@ set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES        [current_design]
 #set_property -dict {LOC AW27 IOSTANDARD DIFF_SSTL12} [get_ports clk_250mhz_2_n]
 #create_clock -period 4 -name clk_250mhz_2 [get_ports clk_250mhz_2_p]
 
-# 125 MHz
-set_property -dict {LOC P42 IOSTANDARD LVDS} [get_ports clk_125mhz_p]
-set_property -dict {LOC P43 IOSTANDARD LVDS} [get_ports clk_125mhz_n]
-create_clock -period 8.000 -name clk_125mhz [get_ports clk_125mhz_p]
+# 100 MHz
+set_property -dict {LOC BH51 IOSTANDARD LVDS} [get_ports clk_100mhz_p]
+set_property -dict {LOC BJ51 IOSTANDARD LVDS} [get_ports clk_100mhz_n]
+create_clock -period 10.000 -name clk_100mhz [get_ports clk_100mhz_p]
 
 # 90 MHz
 #set_property -dict {LOC AL20 IOSTANDARD LVCMOS18} [get_ports clk_90mhz]
