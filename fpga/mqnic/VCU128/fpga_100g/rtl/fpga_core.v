@@ -417,19 +417,16 @@ module fpga_core #
     input  wire                               qsfp4_modprsl,
     input  wire                               qsfp4_intl,
     output wire                               qsfp4_lpmode,
+    
     /*
      * QSPI flash
      */
     output wire                               fpga_boot,
     output wire                               qspi_clk,
-    input  wire [3:0]                         qspi_0_dq_i,
-    output wire [3:0]                         qspi_0_dq_o,
-    output wire [3:0]                         qspi_0_dq_oe,
-    output wire                               qspi_0_cs,
-    input  wire [3:0]                         qspi_1_dq_i,
-    output wire [3:0]                         qspi_1_dq_o,
-    output wire [3:0]                         qspi_1_dq_oe,
-    output wire                               qspi_1_cs
+    input  wire [3:0]                         qspi_dq_i,
+    output wire [3:0]                         qspi_dq_o,
+    output wire [3:0]                         qspi_dq_oe,
+    output wire                               qspi_cs
 );
 
 parameter PORT_COUNT = IF_COUNT*PORTS_PER_IF;
@@ -492,12 +489,9 @@ reg i2c_sda_o_reg = 1'b1;
 reg fpga_boot_reg = 1'b0;
 
 reg qspi_clk_reg = 1'b0;
-reg qspi_0_cs_reg = 1'b1;
-reg [3:0] qspi_0_dq_o_reg = 4'd0;
-reg [3:0] qspi_0_dq_oe_reg = 4'd0;
-reg qspi_1_cs_reg = 1'b1;
-reg [3:0] qspi_1_dq_o_reg = 4'd0;
-reg [3:0] qspi_1_dq_oe_reg = 4'd0;
+reg qspi_cs_reg = 1'b1;
+reg [3:0] qspi_dq_o_reg = 4'd0;
+reg [3:0] qspi_dq_oe_reg = 4'd0;
 
 assign ctrl_reg_wr_wait = 1'b0;
 assign ctrl_reg_wr_ack = ctrl_reg_wr_ack_reg;
@@ -528,12 +522,9 @@ assign i2c_sda_t = i2c_sda_o_reg;
 assign fpga_boot = fpga_boot_reg;
 
 assign qspi_clk = qspi_clk_reg;
-assign qspi_0_cs = qspi_0_cs_reg;
-assign qspi_0_dq_o = qspi_0_dq_o_reg;
-assign qspi_0_dq_oe = qspi_0_dq_oe_reg;
-assign qspi_1_cs = qspi_1_cs_reg;
-assign qspi_1_dq_o = qspi_1_dq_o_reg;
-assign qspi_1_dq_oe = qspi_1_dq_oe_reg;
+assign qspi_cs = qspi_cs_reg;
+assign qspi_dq_o = qspi_dq_o_reg;
+assign qspi_dq_oe = qspi_dq_oe_reg;
 
 always @(posedge clk_250mhz) begin
     ctrl_reg_wr_ack_reg <= 1'b0;
@@ -585,29 +576,16 @@ always @(posedge clk_250mhz) begin
                 fpga_boot_reg <= ctrl_reg_wr_data == 32'hFEE1DEAD;
             end
             RBB+8'h30: begin
-                // SPI flash ctrl: control 0
+                  // SPI flash ctrl: control 0
                 if (ctrl_reg_wr_strb[0]) begin
-                    qspi_0_dq_o_reg <= ctrl_reg_wr_data[3:0];
+                    qspi_dq_o_reg <= ctrl_reg_wr_data[3:0];
                 end
                 if (ctrl_reg_wr_strb[1]) begin
-                    qspi_0_dq_oe_reg <= ctrl_reg_wr_data[11:8];
+                    qspi_dq_oe_reg <= ctrl_reg_wr_data[11:8];
                 end
                 if (ctrl_reg_wr_strb[2]) begin
                     qspi_clk_reg <= ctrl_reg_wr_data[16];
-                    qspi_0_cs_reg <= ctrl_reg_wr_data[17];
-                end
-            end
-            RBB+8'h34: begin
-                // SPI flash ctrl: control 1
-                if (ctrl_reg_wr_strb[0]) begin
-                    qspi_1_dq_o_reg <= ctrl_reg_wr_data[3:0];
-                end
-                if (ctrl_reg_wr_strb[1]) begin
-                    qspi_1_dq_oe_reg <= ctrl_reg_wr_data[11:8];
-                end
-                if (ctrl_reg_wr_strb[2]) begin
-                    qspi_clk_reg <= ctrl_reg_wr_data[16];
-                    qspi_1_cs_reg <= ctrl_reg_wr_data[17];
+                    qspi_cs_reg <= ctrl_reg_wr_data[17];
                 end
             end
             default: ctrl_reg_wr_ack_reg <= 1'b0;
@@ -663,19 +641,12 @@ always @(posedge clk_250mhz) begin
                 ctrl_reg_rd_data_reg[23:16] <= 8;  // data width (dual QSPI)
                 ctrl_reg_rd_data_reg[31:24] <= 0;  // address width (N/A for SPI)
             end
-            RBB+8'h30: begin
+           RBB+8'h30: begin
                 // SPI flash ctrl: control 0
-                ctrl_reg_rd_data_reg[3:0] <= qspi_0_dq_i;
-                ctrl_reg_rd_data_reg[11:8] <= qspi_0_dq_oe;
+                ctrl_reg_rd_data_reg[3:0] <= qspi_dq_i;
+                ctrl_reg_rd_data_reg[11:8] <= qspi_dq_oe;
                 ctrl_reg_rd_data_reg[16] <= qspi_clk;
-                ctrl_reg_rd_data_reg[17] <= qspi_0_cs;
-            end
-            RBB+8'h34: begin
-                // SPI flash ctrl: control 1
-                ctrl_reg_rd_data_reg[3:0] <= qspi_1_dq_i;
-                ctrl_reg_rd_data_reg[11:8] <= qspi_1_dq_oe;
-                ctrl_reg_rd_data_reg[16] <= qspi_clk;
-                ctrl_reg_rd_data_reg[17] <= qspi_1_cs;
+                ctrl_reg_rd_data_reg[17] <= qspi_cs;
             end
             default: ctrl_reg_rd_ack_reg <= 1'b0;
         endcase
@@ -701,12 +672,9 @@ always @(posedge clk_250mhz) begin
         fpga_boot_reg <= 1'b0;
 
         qspi_clk_reg <= 1'b0;
-        qspi_0_cs_reg <= 1'b1;
-        qspi_0_dq_o_reg <= 4'd0;
-        qspi_0_dq_oe_reg <= 4'd0;
-        qspi_1_cs_reg <= 1'b1;
-        qspi_1_dq_o_reg <= 4'd0;
-        qspi_1_dq_oe_reg <= 4'd0;
+        qspi_cs_reg <= 1'b1;
+        qspi_dq_o_reg <= 4'd0;
+        qspi_dq_oe_reg <= 4'd0;
     end
 end
 

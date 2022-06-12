@@ -482,39 +482,23 @@ assign i2c_sda = i2c_sda_t_reg ? 1'bz : i2c_sda_o_reg;
 
 // Flash
 wire qspi_clk_int;
-wire [3:0] qspi_0_dq_int;
-wire [3:0] qspi_0_dq_i_int;
-wire [3:0] qspi_0_dq_o_int;
-wire [3:0] qspi_0_dq_oe_int;
-wire qspi_0_cs_int;
-wire [3:0] qspi_1_dq_i_int;
-wire [3:0] qspi_1_dq_o_int;
-wire [3:0] qspi_1_dq_oe_int;
-wire qspi_1_cs_int;
+wire [3:0] qspi_dq_int;
+wire [3:0] qspi_dq_i_int;
+wire [3:0] qspi_dq_o_int;
+wire [3:0] qspi_dq_oe_int;
+wire qspi_cs_int;
 
 reg qspi_clk_reg;
-reg [3:0] qspi_0_dq_o_reg;
-reg [3:0] qspi_0_dq_oe_reg;
-reg qspi_0_cs_reg;
-reg [3:0] qspi_1_dq_o_reg;
-reg [3:0] qspi_1_dq_oe_reg;
-reg qspi_1_cs_reg;
+reg [3:0] qspi_dq_o_reg;
+reg [3:0] qspi_dq_oe_reg;
+reg qspi_cs_reg;
 
 always @(posedge pcie_user_clk) begin
     qspi_clk_reg <= qspi_clk_int;
-    qspi_0_dq_o_reg <= qspi_0_dq_o_int;
-    qspi_0_dq_oe_reg <= qspi_0_dq_oe_int;
-    qspi_0_cs_reg <= qspi_0_cs_int;
-    qspi_1_dq_o_reg <= qspi_1_dq_o_int;
-    qspi_1_dq_oe_reg <= qspi_1_dq_oe_int;
-    qspi_1_cs_reg <= qspi_1_cs_int;
+    qspi_dq_o_reg <= qspi_dq_o_int;
+    qspi_dq_oe_reg <= qspi_dq_oe_int;
+    qspi_cs_reg <= qspi_cs_int;
 end
-
-assign qspi_1_dq[0] = qspi_1_dq_oe_reg[0] ? qspi_1_dq_o_reg[0] : 1'bz;
-assign qspi_1_dq[1] = qspi_1_dq_oe_reg[1] ? qspi_1_dq_o_reg[1] : 1'bz;
-assign qspi_1_dq[2] = qspi_1_dq_oe_reg[2] ? qspi_1_dq_o_reg[2] : 1'bz;
-assign qspi_1_dq[3] = qspi_1_dq_oe_reg[3] ? qspi_1_dq_o_reg[3] : 1'bz;
-assign qspi_1_cs = qspi_1_cs_reg;
 
 sync_signal #(
     .WIDTH(8),
@@ -522,19 +506,18 @@ sync_signal #(
 )
 flash_sync_signal_inst (
     .clk(pcie_user_clk),
-    .in({qspi_1_dq, qspi_0_dq_int}),
-    .out({qspi_1_dq_i_int, qspi_0_dq_i_int})
+    .in({qspi_dq_int}),
+    .out({qspi_dq_i_int})
 );
 
 STARTUPE3
 startupe3_inst (
     .CFGCLK(),
-    .CFGMCLK(),
-    .DI(qspi_0_dq_int),
-    .DO(qspi_0_dq_o_reg),
-    .DTS(~qspi_0_dq_oe_reg),
+    .DI(qspi_dq_int),
+    .DO(qspi_dq_o_reg),
+    .DTS(~qspi_dq_oe_reg),
     .EOS(),
-    .FCSBO(qspi_0_cs_reg),
+    .FCSBO(qspi_cs_reg),
     .FCSBTS(1'b0),
     .GSR(1'b0),
     .GTS(1'b0),
@@ -2801,16 +2784,15 @@ core_inst (
     /*
      * QSPI flash
      */
+     /*
+     * QSPI flash
+     */
     .fpga_boot(fpga_boot),
     .qspi_clk(qspi_clk_int),
-    .qspi_0_dq_i(qspi_0_dq_i_int),
-    .qspi_0_dq_o(qspi_0_dq_o_int),
-    .qspi_0_dq_oe(qspi_0_dq_oe_int),
-    .qspi_0_cs(qspi_0_cs_int),
-    .qspi_1_dq_i(qspi_1_dq_i_int),
-    .qspi_1_dq_o(qspi_1_dq_o_int),
-    .qspi_1_dq_oe(qspi_1_dq_oe_int),
-    .qspi_1_cs(qspi_1_cs_int)
+    .qspi_dq_i(qspi_dq_i_int),
+    .qspi_dq_o(qspi_dq_o_int),
+    .qspi_dq_oe(qspi_dq_oe_int),
+    .qspi_cs(qspi_cs_int)
 );
 
 endmodule
