@@ -305,11 +305,9 @@ module fpga #
     output wire         qsfp4_resetl,
     input  wire         qsfp4_modprsl,
     input  wire         qsfp4_intl,
-    output wire         qsfp4_lpmode,
+    output wire         qsfp4_lpmode
 
-    inout  wire [3:0]   qspi_1_dq,
-    output wire         qspi_1_cs
-);
+    );
 
 // PTP configuration
 parameter PTP_TS_WIDTH = 96;
